@@ -9,6 +9,7 @@ import {
   restoreProject,
   addMember,
   removeMember,
+  getAllProjectsWithStats,
 } from '../controllers/project.controller.js'
 
 import { protect } from '../middlewares/auth.middleware.js'
@@ -23,6 +24,9 @@ router.get('/:id', getProjectById)
 router.patch('/:id', updateProject)
 router.delete('/:id', softDeleteProject)
 router.post('/restore/:id', restoreProject)
+
+// Route for getting project stats
+router.get('/with-stats', protect, getAllProjectsWithStats)
 
 // Member Management
 router.post('/:id/members', addMember)

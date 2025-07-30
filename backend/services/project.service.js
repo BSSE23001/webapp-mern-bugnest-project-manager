@@ -2,6 +2,11 @@ import Project from '../models/Project.model.js'
 import mongoose from 'mongoose'
 import ApiError from '../utils/ApiError.js'
 
+/* Note Below We are Talking About the admin rights but
+    These admin rights are related to the admin of the
+    Project not the whole application
+ */
+
 export const create = async (data, creatorId) => {
   const project = await Project.create({
     ...data,
@@ -53,12 +58,131 @@ export const getById = async (projectId) => {
   )
 }
 
-export const update = async (projectId, data, userId) => {}
+export const update = async (projectId, data, requesterId) => {
+  const project = await Project.findById(projectId)
+  if (!project) throw new ApiError(404, 'Project Not Found')
+  const isAdmin = project.members.some(
+    (m) => m.user.toString() === requesterId && m.role === 'admin',
+  )
+  if (!isAdmin) throw new ApiError(403, 'Only Admin can Update Project')
 
-export const softDelete = async (projectId) => {}
+  Object.assign(project, data)
+  await project.save()
+  return project
+}
 
-export const restore = async (projectId) => {}
+export const softDelete = async (projectId) => {
+  const project = await Project.findById(projectId)
+  if (!project) throw new ApiError(404, 'Project Not Found')
+  //   We Should Normally make such deletion and restoration to admin only rights
+  //   const isAdmin = project.members.some(
+  //     (m) => m.user.toString() === requesterId && m.role === 'admin',
+  //   )
+  //   if (!isAdmin) throw new ApiError(403, 'Only Admin can Soft Delete Project')
+  project.isDeleted = true
+  await project.save()
+  return project
+}
 
-export const addMember = async (projectId, data, userId) => {}
+export const restore = async (projectId) => {
+  const project = await Project.findById(projectId)
+  if (!project) throw new ApiError(404, 'Project Not Found')
+  //   We Should Normally make such deletion and restoration to admin only rights
+  //   const isAdmin = project.members.some(
+  //     (m) => m.user.toString() === requesterId && m.role === 'admin',
+  //   )
+  //   if (!isAdmin) throw new ApiError(403, 'Only Admin can Restore Project')
+  project.isDeleted = false
+  await project.save()
+  return project
+}
 
-export const removeMember = async (projectId, memberId, userId) => {}
+// Below Functionalities are only for the ADMIN OF Project
+export const addMember = async (projectId, { userId, role }, requesterId) => {
+  const project = await Project.findById(projectId)
+  if (!project) throw new ApiError(404, 'Project Not Found')
+  const isAdmin = project.members.some(
+    (m) => m.user.toString() === requesterId && m.role === 'admin',
+  )
+  if (!isAdmin)
+    throw new ApiError(403, 'Only Admin can Add a Member to Project')
+  const alreadyExists = project.members.some(
+    (m) => m.user.toString() === userId,
+  )
+  if (alreadyExists) throw new ApiError(400, 'Member Already Exists')
+
+  project.members.push({ user: userId, role })
+  await project.save()
+  return project
+}
+
+export const removeMember = async (projectId, memberId, requesterId) => {
+  const project = await Project.findById(projectId)
+  if (!project) throw new ApiError(404, 'Project Not Found')
+  const isAdmin = project.members.some(
+    (m) => m.user.toString() === requesterId && m.role === 'admin',
+  )
+  if (!isAdmin)
+    throw new ApiError(403, 'Only Admin can Add a Member to Project')
+  project.members.filter((m) => m.user.toString() !== memberId)
+  await project.save()
+  return project
+}
+
+// Note We are doing toString to the user of member because that is
+// of the type ObjectId and we want to compare plain Strings
+
+export const getProjectsWithStats = async (query) => {
+  const { search = '', status } = query
+
+  const matchStage = {
+    name: { $regex: search, $options: 'i' },
+  }
+  if (status) matchStage.status = status
+
+  const projects = await Project.aggregate([
+    { $match: matchStage },
+    {
+      $lookup: {
+        from: 'issues',
+        let: { projectId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$project', '$$projectId'] },
+                  { $eq: ['$isDeleted', false] },
+                ],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: '$status',
+              count: { $sum: 1 },
+            },
+          },
+        ],
+        as: 'issueStats',
+      },
+    },
+    {
+      $addFields: {
+        issueSummary: {
+          $arrayToObject: {
+            $map: {
+              input: '$issueStats',
+              as: 'stat',
+              in: { k: '$$stat._id', v: '$$stat.count' },
+            },
+          },
+        },
+      },
+    },
+    { $project: { issueStats: 0 } },
+    { $sort: { createdAt: -1 } },
+  ])
+
+  return projects
+}

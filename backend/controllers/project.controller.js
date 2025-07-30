@@ -98,3 +98,12 @@ export const removeMember = async (req, res, next) => {
     next(err)
   }
 }
+
+export const getAllProjectsWithStats = async (req, res, next) => {
+  try {
+    const data = await ProjectService.getProjectsWithStats(req.query)
+    return res.status(200).json(new ApiResponse(200, data, 'Project Stats'))
+  } catch (error) {
+    next(error)
+  }
+}

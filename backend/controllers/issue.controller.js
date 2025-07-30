@@ -46,7 +46,7 @@ export const softDeleteIssue = async (req, res, next) => {
     const deleted = await IssueService.softDelete(req.params.id)
     return res
       .status(200)
-      .json(new ApiResponse(200, updated, 'Issue Soft Deleted'))
+      .json(new ApiResponse(200, deleted, 'Issue Soft Deleted'))
   } catch (err) {
     next(err)
   }
