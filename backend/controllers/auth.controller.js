@@ -74,11 +74,14 @@ export const refreshToken = async (req, res, next) => {
     const { refreshToken } = req.cookies
     if (!refreshToken) return next(new ApiError(401, 'No Refresh Token Exists'))
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET)
-    const accessToken = generateToken(decoded.id)
+    const user = await User.findById(decoded.id).select('-password')
+    if (!user) return next(new ApiError(401, 'User Not Found'))
+
+    const accessToken = generateToken(user._id)
     res.cookie('token', accessToken, cookieOptions)
     return res
       .status(200)
-      .json(new ApiResponse(200, null, 'Access Token Refreshed'))
+      .json(new ApiResponse(200, user, 'Access Token Refreshed'))
   } catch (err) {
     next(new ApiError(401, 'Invalid Refresh Token'))
   }
