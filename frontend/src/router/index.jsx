@@ -6,6 +6,7 @@ import AuthLayout from '../layouts/AuthLayout'
 import AdminLayout from '../layouts/AdminLayout'
 import UserLayout from '../layouts/UserLayout'
 import Dashboard from '../pages/Dashboard'
+import ProjectList from '../features/projects/pages/ProjectList'
 
 export const router = createBrowserRouter([
   {
@@ -15,12 +16,18 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminLayout />,
-        children: [{ index: true, element: <Dashboard /> }],
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: 'projects', element: <ProjectList /> },
+        ],
       },
       {
         path: 'user',
         element: <UserLayout />,
-        children: [{ index: true, element: <Dashboard /> }],
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: 'projects', element: <ProjectList /> },
+        ],
       },
     ],
   },

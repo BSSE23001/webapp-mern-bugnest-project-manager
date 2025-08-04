@@ -14,7 +14,7 @@ export const create = async (data, creatorId) => {
     members: [
       {
         user: creatorId,
-        role: admin,
+        role: 'admin',
       },
     ],
   })
@@ -24,7 +24,6 @@ export const create = async (data, creatorId) => {
 export const getAll = async (userId, query) => {
   const { page = 1, limit = 10, search = '' } = query
   const filter = {
-    isDeleted: false,
     members: {
       $elemMatch: { user: userId },
     },
@@ -124,7 +123,8 @@ export const removeMember = async (projectId, memberId, requesterId) => {
   )
   if (!isAdmin)
     throw new ApiError(403, 'Only Admin can Add a Member to Project')
-  project.members.filter((m) => m.user.toString() !== memberId)
+  const updated = project.members.filter((m) => m.user.toString() !== memberId)
+  project.members = updated
   await project.save()
   return project
 }

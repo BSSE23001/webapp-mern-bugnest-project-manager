@@ -26,7 +26,7 @@ router.delete('/:id', softDeleteProject)
 router.post('/restore/:id', restoreProject)
 
 // Route for getting project stats
-router.get('/with-stats', protect, getAllProjectsWithStats)
+router.get('/with-stats', getAllProjectsWithStats)
 
 // Member Management
 router.post('/:id/members', addMember)
