@@ -36,7 +36,6 @@ const RegisterPage = () => {
     try {
       const res = await registerUser(data).unwrap()
       dispatch(setCredentials(res.data))
-      // redirect logic handled after auth flow setup
     } catch (err) {
       console.error('Registration failed', err)
     }

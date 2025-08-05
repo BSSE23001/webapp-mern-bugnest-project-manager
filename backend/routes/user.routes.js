@@ -14,7 +14,7 @@ const router = express.Router()
 router.use(protect)
 
 // Admin-only routes
-router.get('/', restrictToAdmin, getAllUsers)
+router.get('/', getAllUsers)
 router.patch('/:id/role', restrictToAdmin, updateUserRole)
 router.patch('/:id/status', restrictToAdmin, toggleUserStatus)
 

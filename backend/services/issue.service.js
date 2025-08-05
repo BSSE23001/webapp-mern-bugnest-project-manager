@@ -14,7 +14,6 @@ export const getAll = async (query) => {
   const { page = 1, limit = 10, search = '', status, priority, project } = query
 
   const filter = {
-    isDeleted: false, // Ensures only non-deleted issues are fetched
     ...(status && { status }), // You might want to add this if 'status' is a valid filter
     ...(priority && { priority }), // Adds priority filter if provided
     ...(project && mongoose.Types.ObjectId.isValid(project) ? { project } : {}), // Adds project filter if provided and is a valid ObjectId

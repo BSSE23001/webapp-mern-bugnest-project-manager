@@ -63,7 +63,7 @@ export const logoutUser = async (req, res, next) => {
   try {
     res.clearCookie('token')
     res.clearCookie('refreshToken')
-    return res.status(200).json(new ApiResponse(200, 'Logout Successful'))
+    return res.status(200).json(new ApiResponse(200, null, 'Logout Successful'))
   } catch (err) {
     next(err)
   }

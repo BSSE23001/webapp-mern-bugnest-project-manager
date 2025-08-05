@@ -7,6 +7,7 @@ import AdminLayout from '../layouts/AdminLayout'
 import UserLayout from '../layouts/UserLayout'
 import Dashboard from '../pages/Dashboard'
 import ProjectList from '../features/projects/pages/ProjectList'
+import IssueList from '../features/issues/pages/IssueList'
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Dashboard /> },
           { path: 'projects', element: <ProjectList /> },
+          { path: 'issues', element: <IssueList /> },
         ],
       },
       {
@@ -27,6 +29,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Dashboard /> },
           { path: 'projects', element: <ProjectList /> },
+          { path: 'issues', element: <IssueList /> },
         ],
       },
     ],

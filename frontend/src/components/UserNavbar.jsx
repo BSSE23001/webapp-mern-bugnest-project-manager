@@ -1,12 +1,23 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useState } from 'react'
 import ThemeToggle from './ThemeToggle'
+import { useLogoutMutation } from '../features/auth/authApi'
+import { setCredentials } from '../features/auth/authSlice'
 
 const UserNavbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const user = useSelector((state) => state.auth.user)
+  const [logout] = useLogoutMutation()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const handleLogout = async () => {
+    const res = await logout().unwrap()
+    dispatch(setCredentials(res.data))
+    navigate('/auth/login')
+  }
 
   return (
     <motion.nav
@@ -20,7 +31,7 @@ const UserNavbar = () => {
           to='/user'
           className='text-2xl font-bold text-gray-900 dark:text-white'
         >
-          User Dashboard
+          BugNest
         </Link>
 
         <div className='flex items-center space-x-6'>
@@ -48,6 +59,18 @@ const UserNavbar = () => {
             }
           >
             Projects
+          </NavLink>
+          <NavLink
+            to='/user/issues'
+            className={({ isActive }) =>
+              `text-gray-600 dark:text-gray-400 transition-colors duration-300 ${
+                isActive
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600'
+                  : 'hover:text-blue-600 dark:hover:text-blue-400'
+              }`
+            }
+          >
+            Issues
           </NavLink>
 
           <ThemeToggle />
@@ -79,7 +102,7 @@ const UserNavbar = () => {
                     Profile
                   </Link>
                   <button
-                    // onClick={handleLogout}
+                    onClick={handleLogout}
                     className='w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-700'
                   >
                     Logout

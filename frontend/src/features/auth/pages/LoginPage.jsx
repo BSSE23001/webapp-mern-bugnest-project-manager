@@ -31,7 +31,8 @@ const LoginPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: yupResolver(schema) })
+    setFocus,
+  } = useForm({ resolver: yupResolver(schema), mode: 'onBlur' })
 
   const onSubmit = async (data) => {
     try {
@@ -42,6 +43,11 @@ const LoginPage = () => {
     }
   }
 
+  const onError = () => {
+    const firstError = Object.keys(errors)[0]
+    if (firstError) setFocus(firstError)
+  }
+
   return (
     <motion.div
       className='min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900'
@@ -49,10 +55,12 @@ const LoginPage = () => {
       animate={{ opacity: 1 }}
     >
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, onError)}
         className='bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md space-y-4'
       >
-        <h2 className='text-xl font-semibold dark:text-white'>Login</h2>
+        <h2 className='text-4xl text-center font-roboto font-semibold mb-9 dark:text-white'>
+          Login
+        </h2>
         <div>
           <input
             type='email'

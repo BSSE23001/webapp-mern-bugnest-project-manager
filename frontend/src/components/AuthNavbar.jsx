@@ -15,7 +15,7 @@ const AuthNavbar = () => {
           to='/'
           className='text-xl font-bold text-gray-900 dark:text-white'
         >
-          MyApp
+          BugNest
         </Link>
         <div className='flex items-center space-x-4'>
           <Link

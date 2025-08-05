@@ -1,4 +1,5 @@
 import Project from '../models/Project.model.js'
+import User from '../models/User.model.js'
 import mongoose from 'mongoose'
 import ApiError from '../utils/ApiError.js'
 
@@ -98,6 +99,9 @@ export const restore = async (projectId) => {
 
 // Below Functionalities are only for the ADMIN OF Project
 export const addMember = async (projectId, { userId, role }, requesterId) => {
+  if (!mongoose.Types.ObjectId.isValid(userId))
+    throw new ApiError(401, 'Invalid Member Id')
+
   const project = await Project.findById(projectId)
   if (!project) throw new ApiError(404, 'Project Not Found')
   const isAdmin = project.members.some(
@@ -105,6 +109,8 @@ export const addMember = async (projectId, { userId, role }, requesterId) => {
   )
   if (!isAdmin)
     throw new ApiError(403, 'Only Admin can Add a Member to Project')
+  const userExists = await User.findById(userId)
+  if (!userExists) throw new ApiError(404, 'User Not Found')
   const alreadyExists = project.members.some(
     (m) => m.user.toString() === userId,
   )
@@ -112,7 +118,8 @@ export const addMember = async (projectId, { userId, role }, requesterId) => {
 
   project.members.push({ user: userId, role })
   await project.save()
-  return project
+  const populatedProject = await project.populate('members.user', 'name email')
+  return populatedProject
 }
 
 export const removeMember = async (projectId, memberId, requesterId) => {
@@ -122,11 +129,12 @@ export const removeMember = async (projectId, memberId, requesterId) => {
     (m) => m.user.toString() === requesterId && m.role === 'admin',
   )
   if (!isAdmin)
-    throw new ApiError(403, 'Only Admin can Add a Member to Project')
+    throw new ApiError(403, 'Only Admin can Remove a Member from Project')
   const updated = project.members.filter((m) => m.user.toString() !== memberId)
   project.members = updated
   await project.save()
-  return project
+  const populatedProject = await project.populate('members.user', 'name email')
+  return populatedProject
 }
 
 // Note We are doing toString to the user of member because that is
